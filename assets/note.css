@@ -1,0 +1,322 @@
+/* ============================================================
+   电路原理复习笔记 · 共享样式（A4 横线笔记纸）
+   网格：24pt 行距（=8.467mm），内容区 31 行/页
+   页面：A4 594.96×841.9pt，边距 上48 下49.9 左右51.02pt
+   内容区：492.92 × 744pt
+   ============================================================ */
+
+:root{
+  --ink:#15202e;      --ink2:#37465c;     --ink3:#65748a;
+  --line:#d3dfec;     --line2:#e8eff7;
+  --blue:#1a5a9e;     --blue-d:#0f3f75;   --blue-s:#e9f1fa;
+  --teal:#0b6a72;     --teal-s:#e2f2f3;
+  --amber:#9a5405;    --amber-s:#fbf1e0;
+  --red:#a81d1d;      --red-s:#fbeaea;
+  --green:#246b43;    --green-s:#e6f4ec;
+  --violet:#52399e;   --violet-s:#efebfa;
+  --rule:#c6d8ea;     /* 横线颜色，渲染时由 PyMuPDF 使用 */
+}
+
+@page{
+  size:A4;
+  margin:48pt 51.02pt 49.9pt 51.02pt;
+}
+
+html,body{ margin:0; padding:0; background:transparent; }
+
+body{
+  font-family:"Microsoft YaHei","微软雅黑","PingFang SC",sans-serif;
+  font-size:11pt;
+  line-height:24pt;
+  color:var(--ink);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  text-align:justify;
+  text-justify:inter-ideograph;
+}
+
+/* ---------- 基础块：全部零边距，靠网格吸附 ---------- */
+p{ margin:0; }
+h1,h2,h3,h4{ margin:0; font-weight:700; }
+ul,ol{ margin:0; padding:0; }
+li{ margin:0; }
+figure{ margin:0; }
+table{ margin:0; border-collapse:collapse; }
+div{ }
+
+/* ---------- 封面 ---------- */
+.cover{
+  height:744pt;
+  display:flex; flex-direction:column; justify-content:center;
+  break-after:page; page-break-after:always;
+  background:#fff;
+}
+.cover .kicker{
+  font-size:11pt; letter-spacing:.34em; color:var(--blue);
+  text-transform:uppercase; margin-bottom:14pt;
+}
+.cover h1{
+  font-size:40pt; line-height:1.22; color:var(--ink);
+  letter-spacing:.02em; margin:0 0 18pt;
+}
+.cover .sub{
+  font-size:15pt; color:var(--ink2); line-height:1.7; margin-bottom:6pt;
+}
+.cover .meta{
+  margin-top:30pt; padding-top:16pt; border-top:2px solid var(--blue);
+  font-size:10pt; color:var(--ink3); line-height:1.9;
+}
+.cover .chips{ margin-top:22pt; }
+.cover .chip{
+  display:inline-block; margin:0 8pt 8pt 0; padding:5pt 11pt;
+  border:1px solid var(--line); border-radius:3pt;
+  font-size:9.5pt; color:var(--ink2); background:#fbfcfe;
+}
+
+/* ---------- 目录 ---------- */
+.toc{ break-after:page; page-break-after:always; }
+.toc h1{
+  font-size:22pt; color:var(--blue-d); margin-bottom:20pt;
+  padding-bottom:10pt; border-bottom:2.5pt solid var(--blue);
+}
+.toc ol{ list-style:none; }
+.toc li{
+  display:flex; align-items:baseline;
+  height:24pt; line-height:24pt; font-size:11pt;
+}
+.toc .n{
+  width:34pt; flex:none; color:var(--blue); font-weight:700;
+}
+.toc .t{ flex:1; }
+.toc .d{
+  flex:1; border-bottom:1px dotted #b9c8da; margin:0 6pt 4pt;
+}
+.toc .pg{ flex:none; width:26pt; text-align:right; color:var(--ink2); }
+.toc .sec{ padding-left:30pt; font-size:10pt; color:var(--ink2); height:22pt; line-height:22pt; }
+
+/* ---------- 章标题 ---------- */
+h1.chap{
+  height:48pt; line-height:48pt;
+  font-size:19pt; color:#fff;
+  background:linear-gradient(90deg,var(--blue-d),var(--blue));
+  border-radius:3pt;
+  padding-left:16pt;
+  margin-bottom:0;
+  break-before:page; page-break-before:always;
+  break-after:avoid; page-break-after:avoid;
+}
+h1.chap .cn{
+  font-size:10pt; font-weight:400; letter-spacing:.2em;
+  opacity:.82; margin-right:12pt;
+}
+.chapcore{
+  height:24pt; line-height:24pt;
+  font-size:10pt; color:var(--blue-d);
+  background:var(--blue-s);
+  border-left:4pt solid var(--blue);
+  padding-left:10pt;
+  break-after:avoid;
+}
+
+/* ---------- 节标题 ---------- */
+h2.sub{
+  background:#fff;
+  height:24pt; line-height:24pt;
+  font-size:13.5pt; color:var(--blue-d);
+  border-left:5pt solid var(--blue);
+  padding-left:9pt;
+  break-after:avoid; page-break-after:avoid;
+}
+h2.sub .no{ color:var(--blue); margin-right:7pt; }
+
+h3.mini{
+  background:#fff;
+  height:24pt; line-height:24pt;
+  font-size:11.5pt; color:var(--ink);
+  break-after:avoid; page-break-after:avoid;
+}
+h3.mini::before{
+  content:"▍"; color:var(--teal); margin-right:4pt; font-size:11pt;
+}
+
+/* ---------- 公式框 ---------- */
+.fx{
+  background:#fff;
+  border-left:3.5pt solid var(--blue);
+  border-radius:2pt;
+  padding:3pt 10pt 3pt;
+  min-height:42pt;
+  break-inside:avoid; page-break-inside:avoid;
+}
+.fx.tall{ min-height:72pt; }
+.fx .katex-display{ margin:0; max-width:100%; overflow:visible; }
+.fx .tag{ display:none; }
+.fxwrap{ position:relative; }
+
+/* 行内公式：限制高度，防止撑破 24pt 网格 */
+.katex{ font-size:1.0em; }
+.katex .vlist-t{ line-height:1; }
+p .katex, li .katex, td .katex{ line-height:1.15; }
+.katex-display>.katex{ font-size:1.06em; }
+
+/* ---------- 卡片 ---------- */
+.card{
+  background:#fbfcfe;
+  border:1pt solid var(--line);
+  border-radius:3pt;
+  padding:10pt 13pt;
+  break-inside:auto;
+}
+.card.brk{ break-inside:auto; }
+.card .lbl{
+  display:inline-block; font-size:9pt; font-weight:700;
+  padding:1pt 7pt; border-radius:2pt; margin-bottom:4pt;
+}
+.lbl.b{ background:var(--blue-s); color:var(--blue-d); }
+.lbl.t{ background:var(--teal-s); color:var(--teal); }
+.lbl.a{ background:var(--amber-s); color:var(--amber); }
+.lbl.r{ background:var(--red-s); color:var(--red); }
+.lbl.g{ background:var(--green-s); color:var(--green); }
+.lbl.v{ background:var(--violet-s); color:var(--violet); }
+
+/* ---------- 提示框 ---------- */
+.callout{
+  padding:8pt 12pt 8pt 13pt;
+  border-radius:2pt;
+  border-left:4pt solid;
+  font-size:10.3pt;
+  line-height:22pt;
+  break-inside:avoid; page-break-inside:avoid;
+}
+.callout b{ font-weight:700; }
+.callout.warn{ background:var(--red-s);   border-color:var(--red);   }
+.callout.tip { background:var(--amber-s); border-color:var(--amber); }
+.callout.key { background:var(--teal-s);  border-color:var(--teal);  }
+.callout.ok  { background:var(--green-s); border-color:var(--green); }
+.callout.warn b{ color:var(--red); }
+.callout.tip  b{ color:var(--amber); }
+.callout.key  b{ color:var(--teal); }
+.callout.ok   b{ color:var(--green); }
+
+/* ---------- 例题 ---------- */
+.ex{
+  border:1.2pt solid var(--blue);
+  border-radius:3pt;
+  background:#fff;
+  break-inside:auto;
+}
+.ex-hd{
+  height:24pt; line-height:24pt;
+  background:var(--blue-s);
+  border-bottom:1pt solid var(--blue);
+  padding:0 12pt;
+  font-size:10.5pt; font-weight:700; color:var(--blue-d);
+}
+.ex-hd .src{
+  float:right; font-size:8.5pt; font-weight:400; color:var(--ink3);
+}
+.ex-bd{ padding:6pt 13pt; }
+
+/* ---------- 步骤 ---------- */
+.steps{ counter-reset:st; list-style:none; }
+.steps>li{
+  counter-increment:st;
+  position:relative;
+  padding-left:22pt;
+  min-height:24pt;
+  line-height:24pt;
+}
+.steps>li::before{
+  content:counter(st);
+  position:absolute; left:0; top:3pt;
+  width:15pt; height:15pt; line-height:15pt;
+  text-align:center; border-radius:50%;
+  background:var(--blue); color:#fff;
+  font-size:8.5pt; font-weight:700;
+}
+
+/* ---------- 列表 ---------- */
+ul.dot{ list-style:none; }
+ul.dot>li{
+  position:relative; padding-left:14pt;
+  line-height:24pt;
+}
+ul.dot>li::before{
+  content:"◆"; position:absolute; left:0; top:0;
+  color:var(--blue); font-size:7pt;
+}
+ul.chk{ list-style:none; }
+ul.chk>li{
+  position:relative; padding-left:19pt;
+  line-height:24pt;
+}
+ul.chk>li::before{
+  content:"□"; position:absolute; left:2pt; top:0;
+  color:var(--ink3); font-size:10pt;
+}
+ol.num{ list-style:decimal; padding-left:18pt; }
+ol.num>li{ line-height:24pt; }
+
+/* ---------- 表格 ---------- */
+table.t{
+  width:100%;
+  font-size:10pt;
+  line-height:22pt;
+  background:#fff;
+}
+table.t thead{ display:table-header-group; }
+table.t th{
+  background:var(--blue-s);
+  color:var(--blue-d);
+  font-weight:700;
+  border-bottom:1.2pt solid var(--blue);
+  padding:1pt 8pt;
+  height:24pt;
+  text-align:left;
+  word-break:break-word;
+}
+table.t td{
+  border-bottom:.6pt solid var(--line);
+  padding:1pt 8pt;
+  height:24pt;
+  vertical-align:middle;
+  word-break:break-word;
+}
+table.t tr{ break-inside:avoid; page-break-inside:avoid; }
+table.t tbody tr:nth-child(even){ background:#fafcfe; }
+table.t .c{ text-align:center; }
+table.t td .katex{ font-size:.98em; }
+
+/* ---------- 图 ---------- */
+figure.fig{
+  background:#fff;
+  padding:4pt 0 2pt;
+  break-inside:avoid; page-break-inside:avoid;
+  text-align:center;
+}
+figure.fig svg{ max-width:100%; display:block; margin:0 auto; }
+figure.fig img{ max-width:100%; display:block; margin:0 auto; }
+figure.fig figcaption{
+  font-size:9pt; line-height:18pt; color:var(--ink3);
+  margin-top:2pt;
+}
+.svgtxt{ font-family:"Microsoft YaHei","微软雅黑",sans-serif; }
+
+/* ---------- 并排 ---------- */
+.two{ display:flex; gap:14pt; }
+.two>div{ flex:1; min-width:0; }
+
+/* ---------- 杂项 ---------- */
+.footnote{
+  font-size:9pt; line-height:20pt; color:var(--ink3);
+  border-top:.8pt dashed var(--line);
+  padding-top:3pt;
+}
+.hl{ background:linear-gradient(transparent 62%,#ffe9a8 62%); }
+b.k{ color:var(--blue-d); }
+code{
+  font-family:Consolas,"Courier New",monospace;
+  font-size:9.5pt; background:#f2f5f9; padding:0 3pt; border-radius:2pt;
+}
+.pb{ break-before:page; page-break-before:always; height:0; }
+.nobreak{ break-inside:avoid; page-break-inside:avoid; }

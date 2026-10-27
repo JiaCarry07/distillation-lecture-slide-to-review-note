@@ -1,0 +1,50 @@
+<h1 class="chap"><span class="cn">CHAPTER 1</span>电路模型入门（自编示例）</h1>
+<div class="chapcore">先规定电流和电压的参考方向，再把连接关系写成方程。</div>
+
+<h2 class="sub"><span class="no">1.1</span>一个最小闭合电路</h2>
+<p>下图是为本 skill 编写的演示电路。理想电压源提供 $U_S=6\ \mathrm{V}$，电阻为 $R=3\ \Omega$。导线和元件构成闭合回路，电流参考方向沿顺时针方向。</p>
+
+<figure class="fig">
+<svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+  <line x1="90" y1="38" x2="320" y2="38" fill="none" stroke="#37465c" stroke-width="2"/>
+  <line x1="360" y1="38" x2="590" y2="38" fill="none" stroke="#37465c" stroke-width="2"/>
+  <line x1="590" y1="38" x2="590" y2="145" fill="none" stroke="#37465c" stroke-width="2"/>
+  <line x1="590" y1="145" x2="90" y2="145" fill="none" stroke="#37465c" stroke-width="2"/>
+  <line x1="90" y1="38" x2="90" y2="76" fill="none" stroke="#37465c" stroke-width="2"/>
+  <line x1="90" y1="104" x2="90" y2="145" fill="none" stroke="#37465c" stroke-width="2"/>
+  <rect x="320" y="31" width="40" height="14" fill="#fff" stroke="#37465c" stroke-width="2"/>
+  <circle cx="90" cy="90" r="14" fill="#fff" stroke="#37465c" stroke-width="2"/>
+  <text class="svgtxt" x="90" y="87" text-anchor="middle" font-size="10" fill="#37465c">+</text>
+  <text class="svgtxt" x="90" y="99" text-anchor="middle" font-size="10" fill="#37465c">−</text>
+  <text class="svgtxt" x="340" y="25" text-anchor="middle" font-size="12" fill="#1a5a9e">R = 3 Ω</text>
+  <text class="svgtxt" x="55" y="94" text-anchor="middle" font-size="12" fill="#1a5a9e">6 V</text>
+  <line x1="444" y1="38" x2="486" y2="38" fill="none" stroke="#a81d1d" stroke-width="2.5"/>
+  <path d="M486,38 L478,34 L478,42 Z" fill="#a81d1d" stroke="#a81d1d" stroke-width="1"/>
+  <text class="svgtxt" x="465" y="26" text-anchor="middle" font-size="12" fill="#a81d1d">I</text>
+</svg>
+<figcaption>图 1-1　自编的单电源、单电阻闭合电路</figcaption>
+</figure>
+
+<p>采用关联参考方向时，电阻两端电压为 $U_R=RI$。沿回路列电压平衡方程，得到 $U_S-U_R=0$，因此电流由电源电压和电阻共同确定。</p>
+<div class="fx">$$I=\frac{U_S}{R}=\frac{6\ \mathrm{V}}{3\ \Omega}=2\ \mathrm{A}$$</div>
+
+<div class="ex">
+  <div class="ex-hd">例 1　计算电阻吸收的功率<span class="src">自编演示题</span></div>
+  <div class="ex-bd">
+    <ol class="steps">
+      <li>确认电流从电阻电压的正端流入，采用吸收功率的符号约定。</li>
+      <li>代入 $U_R=RI=6\ \mathrm{V}$，再计算功率。</li>
+    </ol>
+    <div class="fx">$$P_R=U_R I=6\ \mathrm{V}\times2\ \mathrm{A}=12\ \mathrm{W}$$</div>
+  </div>
+</div>
+
+<h2 class="sub"><span class="no">1.2</span>公式速查与易错点</h2>
+<table class="t">
+  <thead><tr><th>关系</th><th>表达式</th><th>适用条件</th></tr></thead>
+  <tbody>
+    <tr><td>欧姆定律</td><td>$U_R=RI$</td><td>理想线性电阻</td></tr>
+    <tr><td>吸收功率</td><td>$P_R=U_RI$</td><td>电流从电压正端流入</td></tr>
+  </tbody>
+</table>
+<div class="callout warn"><b>易错点</b>　负电流表示实际方向与参考方向相反。</div>
