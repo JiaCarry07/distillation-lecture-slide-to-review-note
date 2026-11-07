@@ -16,7 +16,7 @@ PARTS = ROOT / "build" / "parts"
 COVER = PARTS / "cover.html"
 BUILD = ROOT / "build"
 PY = sys.executable
-CHAPTER_RE = re.compile(r"C\s*H\s*A\s*P\s*T\s*E\s*R\s*((?:\s*\d)+)")
+CHAPTER_RE = re.compile(r"C[ \t]*H[ \t]*A[ \t]*P[ \t]*T[ \t]*E[ \t]*R[ \t]*((?:[ \t]*\d)+)")
 
 
 def discover_chapters():
@@ -56,16 +56,18 @@ def replace_text(source, attribute, value):
 def patch_cover(chapters, pages, total, title):
     source = COVER.read_text(encoding="utf-8")
     source = replace_text(source, r'data-title="[^"]*"', title)
-    source = replace_text(source, r'data-pg="total"', total)
+    first_body = min(pages.values()) if pages else None
+    body_total = total - first_body + 1 if first_body is not None else 0
+    source = replace_text(source, r'data-pg="total"', body_total)
     figures = sum(p.read_text(encoding="utf-8").count("<figure") for _, _, p in chapters)
     examples = sum(p.read_text(encoding="utf-8").count('class="ex"') for _, _, p in chapters)
-    chips = f"{len(chapters)} 章　{figures} 幅插图　{examples} 道例题　A4 横线纸"
+    chips = f"{len(chapters)} 章　{figures} 幅插图　{examples} 道例题　A4 图文版"
     source = replace_text(source, r'data-pg="chips"', chips)
     rows = []
     for number, name, _ in chapters:
         rows.append(
             f'<tr><td>第 {number} 章</td><td>{html.escape(name)}</td>'
-            f'<td data-pg="{number}">{pages.get(number, 0)}</td></tr>'
+            f'<td data-pg="{number}">{pages[number] - first_body + 1 if number in pages else 0}</td></tr>'
         )
     pattern = re.compile(r'(<tbody data-toc>).*?(</tbody>)', re.DOTALL)
     source, count = pattern.subn(lambda m: m.group(1) + "\n" + "\n".join(rows) + "\n" + m.group(2), source)
@@ -85,14 +87,13 @@ def run(*args):
     return result.stdout.decode("utf-8", errors="replace")
 
 
-def build(pdf, skip_first, footer_left, browser=None, preview=False):
+def build(pdf, skip_first, footer_left, browser=None, page_number_position="right"):
     run("build/assemble.py", "--out", "note_full.html")
     command = ["build/render.py", "build/note_full.html", pdf,
-               "--skip-first", skip_first, "--footer-left", footer_left]
+               "--skip-first", skip_first, "--footer-left", footer_left,
+               "--page-number-position", page_number_position]
     if browser:
         command.extend(["--browser", browser])
-    if preview:
-        command.append("--no-rules")
     run(*command)
 
 
@@ -102,8 +103,7 @@ def extract_pages(pdf, chapters):
     with pymupdf.open(pdf) as doc:
         total = doc.page_count
         for i, page in enumerate(doc):
-            match = CHAPTER_RE.search(page.get_text())
-            if match:
+            for match in CHAPTER_RE.finditer(page.get_text()):
                 number = int(re.sub(r"\s+", "", match.group(1)))
                 if number in wanted and number not in pages:
                     pages[number] = i + 1
@@ -116,10 +116,13 @@ def extract_pages(pdf, chapters):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--title", default="课程复习笔记", help="封面标题")
-    ap.add_argument("--out", default="复习笔记_A4横线纸.pdf", help="最终 PDF 路径")
-    ap.add_argument("--footer-left", default="复习笔记", help="正文页左侧页脚")
+    ap.add_argument("--out", default="复习笔记_A4图文版.pdf", help="最终 PDF 路径")
+    ap.add_argument("--footer-left", default="复习笔记", help="页脚说明；页码在左时移至右侧")
+    ap.add_argument("--page-number-position", choices=("right", "left", "center", "outer"),
+                    default="right", help="页码位置；outer 为书籍外侧（奇右偶左）")
     ap.add_argument("--browser", help="Edge/Chrome 程序路径")
     ap.add_argument("--max-passes", type=int, default=5)
+    ap.add_argument("--force", action="store_true", help="允许替换已有输出")
     args = ap.parse_args()
     if args.max_passes < 2:
         ap.error("--max-passes 至少为 2")
@@ -129,8 +132,10 @@ def main():
     candidate = BUILD / "_final.pdf"
     output = pathlib.Path(args.out)
     if not output.is_absolute():
-        output = ROOT / output
+        output = ROOT.parent / output
     output = output.resolve()
+    if output.exists() and not args.force:
+        raise RuntimeError(f"输出已存在：{output}；选择新文件名或使用 --force")
     output.parent.mkdir(parents=True, exist_ok=True)
 
     patch_cover(chapters, {}, 0, args.title)
@@ -138,7 +143,7 @@ def main():
     try:
         for attempt in range(1, args.max_passes + 1):
             print(f"第 {attempt} 轮：渲染并核对目录页码", flush=True)
-            build(preview, 0, "", args.browser, preview=True)
+            build(preview, 0, "", args.browser)
             current = extract_pages(preview, chapters)
             patch_cover(chapters, *current, args.title)
             if current == previous:
@@ -149,11 +154,11 @@ def main():
 
         pages, _ = current
         skip_first = min(pages.values()) - 1
-        build(candidate, skip_first, args.footer_left, args.browser)
+        build(candidate, skip_first, args.footer_left, args.browser, args.page_number_position)
         if extract_pages(candidate, chapters) != current:
             raise RuntimeError("最终 PDF 的章首页与目录不一致，未替换目标文件")
         os.replace(candidate, output)
-        print(f"完成：{output}（{current[1]} 页，前 {skip_first} 页无横线）")
+        print(f"完成：{output}（{current[1]} 页，前 {skip_first} 页不盖页脚）")
     finally:
         preview.unlink(missing_ok=True)
         candidate.unlink(missing_ok=True)

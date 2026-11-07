@@ -1,37 +1,47 @@
 #!/usr/bin/env python3
-"""Copy the reusable note pipeline into a new working directory."""
+"""Create an editable note project without overwriting existing work."""
 
 import argparse
-import pathlib
+from pathlib import Path
 import shutil
 
 
-def copy_if_absent(source, target):
+ROOT = Path(__file__).resolve().parent.parent
+CORE = {"assemble.py", "render.py", "finalize.py"}
+
+
+def copy_new(source: Path, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
         print(f"保留已有文件：{target}")
-        return
-    shutil.copy2(source, target)
-    print(f"复制：{target}")
+    else:
+        shutil.copy2(source, target)
+        print(f"复制：{target}")
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("destination", help="新工程目录")
-    ap.add_argument("--example", action="store_true", help="同时复制自编示例章节")
-    args = ap.parse_args()
-    root = pathlib.Path(__file__).resolve().parent.parent
-    dest = pathlib.Path(args.destination).resolve()
-    for name in ("src", "qa", "build/parts", "build/assets", "build/tools"):
-        (dest / name).mkdir(parents=True, exist_ok=True)
-    for source in (root / "scripts").glob("*.py"):
-        copy_if_absent(source, dest / "build" / source.name)
-    copy_if_absent(root / "assets" / "note.css", dest / "build/assets/note.css")
-    copy_if_absent(root / "references" / "SPEC.md", dest / "build/tools/SPEC.md")
-    copy_if_absent(root / "examples" / "cover.html", dest / "build/parts/cover.html")
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("destination", help="工程目录；源课件和最终 PDF 放这里")
+    parser.add_argument("--example", action="store_true", help="添加可独立渲染的示例章节")
+    args = parser.parse_args()
+    project = Path(args.destination).resolve()
+    stage = project / ".courseware-note-studio"
+    build = stage / "build"
+    for name in ("parts", "assets/figs", "src", "pdf", "thumbs", "tools", "references"):
+        (build / name).mkdir(parents=True, exist_ok=True)
+    for source in sorted((ROOT / "scripts").glob("*.py")):
+        if source.name == "bootstrap.py":
+            continue
+        target = build / source.name if source.name in CORE else build / "tools" / source.name
+        copy_new(source, target)
+    copy_new(ROOT / "assets" / "note.css", build / "assets" / "note.css")
+    for source in sorted((ROOT / "references").glob("*.md")):
+        copy_new(source, build / "references" / source.name)
+    copy_new(ROOT / "examples" / "cover.html", build / "parts" / "cover.html")
     if args.example:
-        copy_if_absent(root / "examples" / "ch01.html", dest / "build/parts/ch01.html")
-    print(f"工程已准备：{dest}")
+        for example in sorted((ROOT / "examples").glob("ch[0-9]*.html")):
+            copy_new(example, build / "parts" / example.name)
+    print(f"工程已准备：{project}")
 
 
 if __name__ == "__main__":

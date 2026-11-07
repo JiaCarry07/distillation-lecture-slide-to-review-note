@@ -1,9 +1,6 @@
 __pycache__/
 *.py[cod]
 .venv/
-.backup/
-_note/
-package/
-build/
-qa/
+.courseware-note-studio/
 *.pdf
+_demo/

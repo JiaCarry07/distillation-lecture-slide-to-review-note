@@ -1,60 +1,26 @@
 ---
 name: distillation-lecture-slide-to-review-note
-description: 将 PDF 课件或由 PPT 导出的 PDF 整理成可打印的 A4 横线纸复习笔记。适用于需要中文正文、KaTeX 数学公式、内嵌 SVG 图示和自动目录页码的笔记制作；不负责把课件内容自动改写成准确笔记。
+description: 将 PDF 讲义、原生 PPTX 课件或习题集整理为可打印的中文 A4 复习笔记或逐题解析。适用于需要公式排版、课件插图、目录和 PDF 检查的任务。
 ---
 
-# distillation-lecture-slide-to-review-note
+# distillation-lecture-slide-to-review-note · 课件笔记工作台
 
-这套工作流把**已核对的章节内容**排成 HTML，再由 Edge/Chrome 打印成 A4 PDF；PyMuPDF 在正文页的文字基线下画横线并盖页码。课件文字抽取、公式还原、图示重绘和事实核对需要执行者完成，脚本只负责确定性的排版步骤。
+先确认用户指定的内容范围、详略、是否保留插图和交付格式。课件抽取、公式还原、图示理解与事实核对由执行者完成；脚本负责工程组织、排版及部分检查，不能证明知识点或解题正确。本技能默认输出自然流式 PDF；横线纸需要使用相应的独立技能。
 
-## 使用前
+## 选择输入路线
 
-- 输入课件需为 PDF；PPT/PPTX 先由用户可用的工具导出 PDF。
-- Windows 环境需可运行的 Python、PyMuPDF 和 Edge/Chrome。首次构建 KaTeX 需联网；离线时可预先把 `package/dist/` 放入工程根目录。依赖和运行命令见 [README.md](README.md)。
-- 先读 [references/SPEC.md](references/SPEC.md) 的排版与公式约束。需要看标记写法时读自编短例 [examples/ch01.html](examples/ch01.html)；它是**功能样例**，不规定实际笔记的篇幅或学科内容。
+- **PDF 讲义**：抽取文字并与原页比对。文字层不可靠时按 [损坏文字层指南](references/broken-text-layer.md) 渲染原页阅读；需要图时按原意重绘或裁切并核验。
+- **PPTX**：用 `extract_pptx.py` 建索引。在 Windows 安装 PowerPoint 时可只读导出 PDF，再依据课件核对 `chapter_map.json`，用 `make_figs.py` 生成配图和联系表。裁图和可选紧凑处理均须逐图检查，不能把像素统计当作完整性证明。
+- **习题集**：逐题核对题干、条件和答案；记录必要的读图依据，给出推导与检查。图形和选项有歧义时注明，不猜测。使用 `.q`、`.qh`、`.qb` 等样式组织题解。
 
-## 制作流程
+## 工程与渲染
 
-1. 用 `scripts/bootstrap.py` 建工程。它只复制不存在的文件，不覆盖已经写好的章节。
+按 [README](README.md) 初始化工程并准备 KaTeX，先阅读 [撰写规范](references/SPEC.md)。每章为 `build/parts/chNN.html`，章号与 `CHAPTER N` 一致；`finalize.py` 根据章节自动生成目录，并在页码稳定后输出 PDF。需要自定义浏览器时传 `--browser`。源文件与输出名称由用户指定；已有目标文件只有显式 `--force` 才替换。
 
-   ```powershell
-   python scripts/bootstrap.py .\_note
-   cd .\_note
-   python build\ensure_katex.py .
-   ```
+封面和目录不显示页码、不计入编号；正文从第 1 页开始，目录也使用正文页码。根据用户的打印与装订方式选择页码位置：普通打印默认右下角；书籍双面装订使用 `--page-number-position outer`，正文奇数页在右下、偶数页在左下。也可选 `left` 或 `center`。装订时要确保正文第 1 页处于右侧（纸张正面）；前置页面数量为奇数时可能需要在正文前插入空白页，并重新检查打印顺序和页码位置。页码在左侧时，页脚说明移至右侧，避免重叠。
 
-2. 逐份抽取课件文字，并与原 PDF 抽样比对。高频中文命中 0 次只是警报，不能单凭它认定文字层损坏。
+PPTX 映射及可选导航命令见 README。`verify_coverage.py` 使用标题和图号启发式匹配，结果仅供人工复核。`tighten_figs.py --apply` 会覆盖工程配图，必须先保留原图并逐图检查。需要多章协作且已获授权时参考 [派发模板](references/dispatch_prompt.md)。
 
-   ```powershell
-   python build\extract_pdf_text.py .\src\chapter1.pdf .\src\chapter1.txt
-   ```
+## 验收与交付
 
-   如果文字层确实错乱，按 [references/broken-text-layer.md](references/broken-text-layer.md) 把相关页渲染为图后逐页整理；本包不声称提供 OCR。
-
-3. 先写一章，确定解释深度、公式和图示风格，再写其余章节。每章是 `build/parts/chNN.html` 内容片段，以 `<h1 class="chap"><span class="cn">CHAPTER N</span>章节标题</h1>` 开头；文件名和章号必须相符。准确性优先于页数，例题页码以原课件核对。需要分章协作且已获授权时，可参考 [agents/dispatch_prompt.md](agents/dispatch_prompt.md)。
-
-4. KaTeX 资产必须在渲染前准备好。`finalize.py` 自动发现 `chNN.html`，由章节标题生成目录，多次渲染直到页码稳定，并把最终 PDF 输出到工程根目录。
-
-   ```powershell
-   python build\finalize.py --title "课程复习笔记" --out "复习笔记_A4横线纸.pdf"
-   ```
-
-   只验证单章、不需要封面和目录时：
-
-   ```powershell
-   python build\assemble.py --only ch01 --out note_full.html
-   python build\render.py build\note_full.html note.pdf --skip-first 0
-   ```
-
-5. 逐页检查最终 PDF：公式没有 `$...$` 源码、正文约 11 pt、横线贴近正文基线、图示未裁切、页码与目录一致。用 PyMuPDF 抽查文本字号并渲染页面为 PNG，再目视核对。不要只凭文件存在或大小宣布完成。
-
-## 排版不变量
-
-- [assets/note.css](assets/note.css) 的 `@page` 与 [scripts/render.py](scripts/render.py) 的 A4 边距、24 pt 网格、首线位置必须一起维护；改其一就要重新做打印校准。
-- 行内公式不用高分式或复杂矩阵；放到独立 `.fx` 公式框。HTML 内的数学比较符 `<`、`>` 写作 `&lt;`、`&gt;`。
-- 超宽表格和公式可能触发浏览器整页缩放；先拆行、换行或重排，再检查输出字号。`assemble.py` 的溢出处理只是兜底。
-- SVG 应内嵌并给图形明确的描边、填充和可见范围；教材图只能按核对后的含义重绘，不能凭记忆补画。
-
-## 交付
-
-说明覆盖的课件章节、未能确认的内容、公式与图的处理方式，以及 PDF 的页数和逐页检查结果。保留课件原件与可编辑 HTML。公开示例仅使用本包自编的短章节；实际课程材料的公开范围由材料权利人确认。
+检查公式、正文、图注及配图是否与源文件一致；对最终 PDF 逐页渲染查看，核对目录与页码、A4 页面、字号、空白与裁切。检查脚本是辅助，不能替代视觉和内容核对。说明覆盖范围、图示来源、未确认之处及验证结果，保留源文件与可编辑 HTML。
