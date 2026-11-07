@@ -9,12 +9,12 @@
 在 Codex 中发送以下请求，让内置安装器从本仓库根目录安装：
 
 ```text
-使用 $skill-installer 安装 JiaCarry07/distillation-lecture-slide-to-review-note 仓库根目录的 skill，安装名称为 distillation-lecture-slide-to-review-note。
+使用 $skill-installer 安装 JiaCarry07/distillation-lecture-slide-to-review-note 仓库根目录（--path .）的 skill，安装名称为 distillation-lecture-slide-to-review-note。
 ```
 
 安装后开启新的 Codex 对话，然后说“使用 distillation-lecture-slide-to-review-note 整理这些课件”，并提供课件和希望的范围。已有旧版时，先备份旧 skill；安装器不会覆盖同名目录，需按自己的环境处理旧目录后再安装。
 
-也可以从 GitHub 点击 **Code → Download ZIP** 下载，将解压后包含 `SKILL.md` 的整个文件夹命名为 `distillation-lecture-slide-to-review-note`，放到用户的 Codex skills 目录中。安装过程中的依赖配置见下文。
+也可以从 GitHub 点击 **Code → Download ZIP** 下载，将解压后包含 `SKILL.md` 的整个文件夹命名为 `distillation-lecture-slide-to-review-note`，放到用户的 Codex skills 目录中。Windows 默认位置为 `%USERPROFILE%\.codex\skills\distillation-lecture-slide-to-review-note`；若设置了 `CODEX_HOME`，使用其 `skills` 子目录。安装过程中的依赖配置见下文。
 
 ## 环境
 
